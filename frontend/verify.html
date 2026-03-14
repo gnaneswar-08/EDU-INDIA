@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Certificate — EDU INDIA</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(ellipse at 20% 50%, rgba(124,58,237,0.1) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(16,185,129,0.08) 0%, transparent 50%);
+      pointer-events: none; z-index: 0;
+    }
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px; background: rgba(15,15,30,0.95);
+      border-bottom: 1px solid rgba(124,58,237,0.2);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; color: #a78bfa; text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: #34d399; }
+    .nav-subtitle { color: #6b7280; font-size: 0.88rem; }
+    .container {
+      max-width: 560px; margin: 60px auto; padding: 0 24px;
+      position: relative; z-index: 1;
+    }
+    .verify-box {
+      background: rgba(26,26,46,0.9);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 20px; padding: 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .verify-box h2 { font-size: 1.6rem; color: #e0e0e0; margin-bottom: 8px; }
+    .verify-box > p { color: #6b7280; font-size: 0.9rem; margin-bottom: 24px; line-height: 1.6; }
+    input {
+      padding: 13px 16px; background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+      color: #e0e0e0; font-size: 0.92rem; width: 100%;
+      transition: border-color 0.3s; font-family: 'Inter', sans-serif;
+      margin-bottom: 14px;
+    }
+    input:focus { outline: none; border-color: #7c3aed; }
+    input::placeholder { color: #4b5563; }
+    .file-drop {
+      border: 2px dashed rgba(124,58,237,0.3); border-radius: 12px;
+      padding: 28px; text-align: center; cursor: pointer;
+      transition: all 0.3s; background: rgba(124,58,237,0.03);
+      color: #6b7280; margin-bottom: 16px;
+    }
+    .file-drop:hover { border-color: #7c3aed; background: rgba(124,58,237,0.07); transform: translateY(-2px); }
+    .file-drop-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .file-label { color: #7c3aed; font-size: 0.85rem; margin-top: 8px; font-weight: 500; }
+    .btn-primary {
+      width: 100%; padding: 14px; background: linear-gradient(135deg,#7c3aed,#5b21b6);
+      color: white; border: none; border-radius: 12px; cursor: pointer;
+      font-size: 1rem; font-weight: 600; transition: all 0.3s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(124,58,237,0.5); }
+    .result-valid {
+      background: rgba(6,78,59,0.3); border: 1px solid rgba(52,211,153,0.4);
+      border-radius: 14px; padding: 24px; margin-top: 20px; animation: fadeInUp 0.4s ease;
+    }
+    .result-valid h3 { color: #34d399; margin-bottom: 14px; font-size: 1.15rem; }
+    .result-valid p { color: #9ca3af; margin-bottom: 8px; font-size: 0.9rem; }
+    .result-valid p strong { color: #e0e0e0; }
+    .result-invalid {
+      background: rgba(69,10,10,0.4); border: 1px solid rgba(239,68,68,0.4);
+      border-radius: 14px; padding: 24px; margin-top: 20px; animation: fadeInUp 0.4s ease;
+    }
+    .result-invalid h3 { color: #ef4444; margin-bottom: 10px; font-size: 1.1rem; }
+    .result-invalid p { color: #fca5a5; font-size: 0.88rem; margin-top: 8px; }
+    .loading-box {
+      background: rgba(30,27,75,0.6); border: 1px solid rgba(67,56,202,0.4);
+      border-radius: 14px; padding: 24px; margin-top: 20px; text-align: center; color: #a78bfa;
+    }
+    .link-small { color: #7c3aed; font-size: 0.85rem; text-decoration: none; font-weight: 500; }
+    .link-small:hover { color: #a78bfa; }
+    .divider-line { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 24px 0; }
+    .info-strip {
+      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .info-chip {
+      background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.2);
+      color: #a78bfa; padding: 6px 12px; border-radius: 20px; font-size: 0.78rem;
+    }
+    code { background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 4px; color: #a78bfa; font-size: 0.8rem; }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="logo">🎓 EDU <span>INDIA</span></a>
+  <span class="nav-subtitle">Public Certificate Verification Portal</span>
+</nav>
+
+<div class="container">
+  <div class="verify-box">
+    <h2>🔍 Verify Certificate</h2>
+    <p>Upload the original certificate file to instantly verify its authenticity on the Polygon blockchain. Even a single byte change will fail verification.</p>
+
+    <div class="info-strip">
+      <span class="info-chip">⛓️ Polygon Blockchain</span>
+      <span class="info-chip">🔐 SHA-256 Hash</span>
+      <span class="info-chip">✅ Tamper Detection</span>
+    </div>
+
+    <input type="text" id="cert-id" placeholder="Enter Certificate ID (from QR code)" />
+
+    <div class="file-drop" onclick="document.getElementById('verify-file').click()">
+      <div class="file-drop-icon">📄</div>
+      <p>Click to upload original certificate file</p>
+      <p style="font-size:0.8rem; margin-top:4px">PDF / PNG / JPG supported</p>
+      <input type="file" id="verify-file" accept=".pdf,.png,.jpg,.jpeg" style="display:none" onchange="showFile(this)"/>
+      <p id="v-file-name" class="file-label"></p>
+    </div>
+
+    <button class="btn-primary" onclick="verifyCert()">🔗 Verify on Blockchain</button>
+
+    <div id="verify-result"></div>
+
+    <hr class="divider-line">
+    <div style="text-align:center">
+      <a href="index.html" class="link-small">← Back to EDU INDIA</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:5000/api';
+
+  // Auto fill certId from QR code URL
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('certId')) {
+    document.getElementById('cert-id').value = params.get('certId');
+  }
+
+  function showFile(input) {
+    document.getElementById('v-file-name').textContent = '✅ ' + (input.files[0]?.name || '');
+  }
+
+  async function verifyCert() {
+    const certId = document.getElementById('cert-id').value.trim();
+    const file   = document.getElementById('verify-file').files[0];
+
+    if (!certId) return alert('Please enter Certificate ID');
+    if (!file)   return alert('Please upload the certificate file');
+
+    const resultBox = document.getElementById('verify-result');
+    resultBox.innerHTML = `
+      <div class="loading-box">
+        <div style="font-size:2rem; margin-bottom:10px">⏳</div>
+        <p>Checking Polygon blockchain...</p>
+        <p style="font-size:0.8rem; margin-top:6px; color:#6b7280">Comparing SHA-256 hash</p>
+      </div>`;
+
+    const formData = new FormData();
+    formData.append('certId', certId);
+    formData.append('certificate', file);
+
+    try {
+      const res  = await fetch(API + '/verify/check', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.isValid) {
+        resultBox.innerHTML = `
+          <div class="result-valid">
+            <h3>✅ CERTIFICATE VERIFIED</h3>
+            <p><strong>Holder:</strong> ${data.holderName}</p>
+            <p><strong>Issuer:</strong> ${data.issuerName}</p>
+            <p><strong>Course:</strong> ${data.courseName}</p>
+            <p><strong>Issued:</strong> ${new Date(data.issuedDate).toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'})}</p>
+            <p><strong>Hash:</strong> <code>${data.fileHash?.substring(0,32)}...</code></p>
+            <p style="margin-top:14px">
+              <a href="https://mumbai.polygonscan.com/tx/${data.txHash}" target="_blank" class="link-small">
+                🔗 View transaction on PolygonScan ↗
+              </a>
+            </p>
+            <p style="margin-top:8px; font-size:0.78rem; color:#6b7280">
+              Verified by EDU INDIA on Polygon Mumbai Testnet
+            </p>
+          </div>`;
+      } else {
+        resultBox.innerHTML = `
+          <div class="result-invalid">
+            <h3>❌ VERIFICATION FAILED</h3>
+            <p>This certificate could not be verified on the blockchain.</p>
+            <p>The file may have been tampered with or the Certificate ID is incorrect.</p>
+          </div>`;
+      }
+    } catch (err) {
+      resultBox.innerHTML = `
+        <div class="result-invalid">
+          <h3>❌ Error</h3>
+          <p>${err.message}</p>
+        </div>`;
+    }
+  }
+</script>
+</body>
+</html>

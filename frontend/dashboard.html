@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard — EDU INDIA</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px; background: rgba(15,15,30,0.95);
+      border-bottom: 1px solid rgba(124,58,237,0.2); position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; color: #a78bfa; letter-spacing: -0.5px; }
+    .logo span { color: #34d399; }
+    .nav-links { display: flex; align-items: center; gap: 16px; }
+    .btn-small { padding: 8px 18px; background: linear-gradient(135deg,#7c3aed,#5b21b6); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+    .student-layout { display: flex; min-height: calc(100vh - 65px); }
+    .sidebar { width: 240px; min-width: 240px; background: rgba(10,10,20,0.98); border-right: 1px solid rgba(124,58,237,0.15); padding: 20px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .sidebar-profile { display: flex; align-items: center; gap: 12px; padding: 14px; background: rgba(124,58,237,0.1); border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(124,58,237,0.2); }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#7c3aed,#3b82f6); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: white; flex-shrink: 0; }
+    .avatar-name { font-weight: 600; color: #e0e0e0; font-size: 0.9rem; }
+    .avatar-role { font-size: 0.72rem; color: #34d399; margin-top: 2px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; color: #6b7280; cursor: pointer; transition: all 0.25s; font-size: 0.88rem; font-weight: 500; border: 1px solid transparent; user-select: none; }
+    .nav-item:hover { color: #e0e0e0; background: rgba(124,58,237,0.08); }
+    .nav-item.active { color: #a78bfa; background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); }
+    .nav-icon { font-size: 1.1rem; }
+    .main-content { flex: 1; padding: 32px; overflow-y: auto; background: #0a0a0f; }
+    .section { display: none; animation: fadeInUp 0.35s ease; }
+    .section.active { display: block; }
+    .section-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(124,58,237,0.12); }
+    .section-header h2 { font-size: 1.5rem; color: #e0e0e0; margin-bottom: 6px; }
+    .section-header p { color: #6b7280; font-size: 0.88rem; }
+    .profile-grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+    .profile-card { background: rgba(26,26,46,0.9); border: 1px solid rgba(124,58,237,0.2); border-radius: 16px; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .big-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg,#7c3aed,#3b82f6); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: white; box-shadow: 0 8px 25px rgba(124,58,237,0.4); }
+    .profile-name { font-size: 1.1rem; color: #e0e0e0; font-weight: 600; text-align: center; }
+    .profile-email { color: #6b7280; font-size: 0.85rem; text-align: center; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .badge-green { background: rgba(6,78,59,0.5); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+    .uid-card { width: 100%; background: linear-gradient(135deg,rgba(124,58,237,0.15),rgba(59,130,246,0.1)); border: 1px solid rgba(124,58,237,0.4); border-radius: 14px; padding: 18px; }
+    .uid-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+    .uid-value { font-family: monospace; font-size: 1.05rem; color: #a78bfa; font-weight: 700; letter-spacing: 2px; margin-bottom: 12px; min-height: 28px; word-break: break-all; }
+    .uid-actions { display: flex; gap: 8px; }
+    .uid-btn { flex: 1; padding: 8px 6px; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all 0.3s; }
+    .uid-btn-show { background: rgba(124,58,237,0.2); color: #a78bfa; border: 1px solid rgba(124,58,237,0.4); }
+    .uid-btn-copy { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+    .uid-btn-share { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .uid-btn:hover { transform: translateY(-1px); }
+    .uid-msg { font-size: 0.75rem; color: #34d399; margin-top: 8px; min-height: 16px; text-align: center; }
+    .mask-notice { width: 100%; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 10px 14px; font-size: 0.78rem; color: #fbbf24; }
+    .info-card { background: rgba(26,26,46,0.9); border: 1px solid rgba(124,58,237,0.2); border-radius: 16px; padding: 24px; }
+    .info-card h4 { color: #a78bfa; margin-bottom: 18px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.88rem; }
+    .info-row:last-child { border-bottom: none; }
+    .info-row span { color: #6b7280; }
+    .info-row strong { color: #e0e0e0; max-width: 200px; text-align: right; word-break: break-all; }
+    .upload-box { background: rgba(26,26,46,0.9); border: 1px solid rgba(124,58,237,0.2); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 13px; margin-bottom: 28px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    input, select { padding: 12px 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #e0e0e0; font-size: 0.92rem; width: 100%; transition: border-color 0.3s; font-family: 'Inter', sans-serif; }
+    input:focus, select:focus { outline: none; border-color: #7c3aed; }
+    input::placeholder { color: #4b5563; }
+    .file-drop { border: 2px dashed rgba(124,58,237,0.3); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(124,58,237,0.03); color: #6b7280; }
+    .file-drop:hover { border-color: #7c3aed; background: rgba(124,58,237,0.07); }
+    .file-label { color: #7c3aed; font-size: 0.85rem; margin-top: 8px; font-weight: 500; }
+    .btn-primary { padding: 12px 20px; background: linear-gradient(135deg,#7c3aed,#5b21b6); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s; width: 100%; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(124,58,237,0.4); }
+    .status-box { background: rgba(30,27,75,0.6); border: 1px solid rgba(67,56,202,0.4); border-radius: 12px; padding: 18px; font-size: 0.88rem; line-height: 1.9; }
+    .status-box code { background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 4px; color: #a78bfa; font-size: 0.78rem; }
+    .cert-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 16px; }
+    .cert-card { background: rgba(26,26,46,0.9); border: 1px solid rgba(124,58,237,0.15); border-radius: 14px; padding: 20px; transition: all 0.3s; }
+    .cert-card:hover { transform: translateY(-3px); border-color: rgba(124,58,237,0.4); }
+    .cert-card h3 { color: #a78bfa; margin-bottom: 10px; font-size: 0.95rem; }
+    .cert-card p { color: #9ca3af; font-size: 0.82rem; margin-bottom: 4px; }
+    .link-small { color: #7c3aed; font-size: 0.82rem; text-decoration: none; font-weight: 500; }
+    .timeline-add { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .timeline-add input { flex: 1; min-width: 130px; }
+    .btn-add { padding: 12px 20px; background: linear-gradient(135deg,#7c3aed,#5b21b6); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.88rem; font-weight: 600; white-space: nowrap; transition: all 0.3s; }
+    .btn-add:hover { transform: translateY(-2px); }
+    .timeline { display: flex; flex-direction: column; }
+    .timeline-item { display: flex; gap: 18px; padding-bottom: 24px; position: relative; }
+    .timeline-item::before { content: ''; position: absolute; left: 18px; top: 42px; bottom: 0; width: 2px; background: rgba(124,58,237,0.15); }
+    .timeline-item:last-child::before { display: none; }
+    .tl-dot { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg,#7c3aed,#3b82f6); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: white; flex-shrink: 0; }
+    .tl-content { background: rgba(26,26,46,0.9); border: 1px solid rgba(124,58,237,0.15); border-radius: 12px; padding: 14px 18px; flex: 1; }
+    .tl-content h4 { color: #e0e0e0; margin-bottom: 4px; font-size: 0.92rem; }
+    .tl-content p { color: #6b7280; font-size: 0.82rem; }
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(190px,1fr)); gap: 14px; margin-top: 8px; }
+    .skill-card { background: rgba(26,26,46,0.9); border: 1px solid rgba(124,58,237,0.2); border-radius: 12px; padding: 18px; transition: all 0.3s; }
+    .skill-card h4 { color: #e0e0e0; margin-bottom: 10px; font-size: 0.9rem; }
+    .skill-bar { height: 6px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+    .skill-fill { height: 100%; border-radius: 3px; transition: width 0.8s; }
+    .skill-level-text { font-size: 0.74rem; }
+    .domains-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(130px,1fr)); gap: 12px; }
+    .domain-card { background: rgba(26,26,46,0.9); border: 1px solid rgba(124,58,237,0.15); border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .domain-card span { font-size: 1.8rem; display: block; margin-bottom: 8px; }
+    .domain-card p { color: #6b7280; font-size: 0.8rem; font-weight: 500; }
+    .domain-card:hover { transform: translateY(-3px); border-color: rgba(124,58,237,0.4); }
+    .domain-card.selected { border-color: #7c3aed; background: rgba(124,58,237,0.18); }
+    .domain-card.selected p { color: #a78bfa; }
+    .selected-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <span class="logo">🎓 EDU <span>INDIA</span></span>
+  <div class="nav-links">
+    <span id="user-welcome" style="color:#a78bfa; font-size:0.9rem"></span>
+    <button class="btn-small" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="student-layout">
+  <div class="sidebar">
+    <div class="sidebar-profile">
+      <div class="avatar" id="avatar-text">S</div>
+      <div>
+        <div class="avatar-name" id="sidebar-name">Student</div>
+        <div class="avatar-role">● Student</div>
+      </div>
+    </div>
+    <div class="nav-item active" onclick="showSection('profile',this)"><span class="nav-icon">👤</span> My Profile</div>
+    <div class="nav-item" onclick="showSection('documents',this)"><span class="nav-icon">📄</span> My Documents</div>
+    <div class="nav-item" onclick="showSection('timeline',this)"><span class="nav-icon">🎓</span> Academic Timeline</div>
+    <div class="nav-item" onclick="showSection('skills',this)"><span class="nav-icon">⚡</span> Skill Journey</div>
+    <div class="nav-item" onclick="showSection('domains',this)"><span class="nav-icon">🎯</span> Interested Domains</div>
+  </div>
+
+  <div class="main-content">
+
+    <!-- MY PROFILE -->
+    <div id="section-profile" class="section active">
+      <div class="section-header">
+        <h2>👤 My Profile</h2>
+        <p>Your personal information and blockchain identity</p>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-card">
+          <div class="big-avatar" id="big-avatar">S</div>
+          <div class="profile-name" id="profile-name">Loading...</div>
+          <div class="profile-email" id="profile-email"></div>
+          <span class="badge badge-green">✅ Verified Student</span>
+          <div class="uid-card">
+            <div class="uid-label">🪪 EDU INDIA Unique Student ID</div>
+            <div class="uid-value" id="uid-display">Generating...</div>
+            <div class="uid-actions">
+              <button class="uid-btn uid-btn-show" id="mask-btn" onclick="toggleMask()">🙈 Hide</button>
+              <button class="uid-btn uid-btn-copy" onclick="copyUID()">📋 Copy</button>
+              <button class="uid-btn uid-btn-share" onclick="shareUID()">🔗 Share</button>
+            </div>
+            <div class="uid-msg" id="uid-msg"></div>
+          </div>
+          <div class="mask-notice" id="mask-notice" style="display:none">
+            🔒 Your ID is hidden. Recruiters cannot find you until you show it.
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h4>Account Details</h4>
+          <div class="info-row"><span>Full Name</span><strong id="info-name">—</strong></div>
+          <div class="info-row"><span>Email</span><strong id="info-email">—</strong></div>
+          <div class="info-row"><span>Role</span><strong style="color:#a78bfa">Student</strong></div>
+          <div class="info-row"><span>Certificates</span><strong id="info-certs">0</strong></div>
+          <div class="info-row"><span>Unique ID</span><strong id="info-uid" style="font-family:monospace; color:#a78bfa; font-size:0.82rem">—</strong></div>
+          <div class="info-row"><span>ID Visibility</span><strong id="info-visibility" style="color:#34d399">🟢 Public</strong></div>
+          <div class="info-row"><span>Blockchain</span><strong style="color:#34d399">Polygon Mumbai</strong></div>
+          <div class="info-row"><span>Platform</span><strong style="color:#a78bfa">🎓 EDU INDIA</strong></div>
+          <div class="info-row"><span>Status</span><strong style="color:#34d399">✅ Active</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY DOCUMENTS -->
+    <div id="section-documents" class="section">
+      <div class="section-header">
+        <h2>📄 My Documents</h2>
+        <p>Upload and manage your blockchain-verified certificates</p>
+      </div>
+      <div class="upload-box">
+        <div class="two-col">
+          <input type="text" id="holder-name" placeholder="Certificate Holder Name" />
+          <input type="text" id="issuer-name" placeholder="Issuing Institution" />
+        </div>
+        <input type="text" id="course-name" placeholder="Course / Certificate Name" />
+        <div class="file-drop" onclick="document.getElementById('cert-file').click()">
+          <div style="font-size:2rem; margin-bottom:8px">📄</div>
+          <p>Click to upload certificate (PDF / PNG / JPG)</p>
+          <input type="file" id="cert-file" accept=".pdf,.png,.jpg,.jpeg" style="display:none" onchange="showFileName(this)"/>
+          <p id="file-name" class="file-label"></p>
+        </div>
+        <button class="btn-primary" onclick="uploadCert()">🔒 Store on Blockchain</button>
+        <div id="upload-status" class="status-box" style="display:none"></div>
+      </div>
+      <h3 style="color:#a78bfa; margin-bottom:16px; font-size:1rem">📋 Uploaded Certificates</h3>
+      <div id="cert-list" class="cert-grid"></div>
+    </div>
+
+    <!-- ACADEMIC TIMELINE -->
+    <div id="section-timeline" class="section">
+      <div class="section-header">
+        <h2>🎓 Academic Timeline</h2>
+        <p>Your educational journey from start to now</p>
+      </div>
+      <div class="timeline-add">
+        <input type="text" id="tl-year" placeholder="Year (e.g. 2023)" style="max-width:140px" />
+        <input type="text" id="tl-title" placeholder="Degree / Course Title" />
+        <input type="text" id="tl-inst" placeholder="Institution Name" />
+        <button class="btn-add" onclick="addTimeline()">+ Add</button>
+      </div>
+      <div id="timeline-list" class="timeline"></div>
+    </div>
+
+    <!-- SKILL JOURNEY -->
+    <div id="section-skills" class="section">
+      <div class="section-header">
+        <h2>⚡ Skill Journey</h2>
+        <p>Track your skills and proficiency levels</p>
+      </div>
+      <div class="timeline-add">
+        <input type="text" id="skill-name" placeholder="Skill name (e.g. Python, React)" />
+        <select id="skill-level" style="max-width:180px">
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+          <option value="Expert">Expert</option>
+        </select>
+        <button class="btn-add" onclick="addSkill()">+ Add Skill</button>
+      </div>
+      <div id="skills-list" class="skills-grid"></div>
+    </div>
+
+    <!-- INTERESTED DOMAINS -->
+    <div id="section-domains" class="section">
+      <div class="section-header">
+        <h2>🎯 Interested Domains</h2>
+        <p>Click to select domains you are passionate about</p>
+      </div>
+      <div class="domains-grid">
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="Web Development"><span>🌐</span><p>Web Development</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="Blockchain"><span>⛓️</span><p>Blockchain</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="AI / ML"><span>🤖</span><p>AI / ML</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="Cybersecurity"><span>🔐</span><p>Cybersecurity</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="Data Science"><span>📊</span><p>Data Science</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="Cloud Computing"><span>☁️</span><p>Cloud Computing</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="Mobile Dev"><span>📱</span><p>Mobile Dev</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="DevOps"><span>⚙️</span><p>DevOps</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="UI/UX Design"><span>🎨</span><p>UI/UX Design</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="Game Dev"><span>🎮</span><p>Game Dev</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="IoT"><span>🔌</span><p>IoT</p></div>
+        <div class="domain-card" onclick="toggleDomain(this)" data-domain="AR / VR"><span>🥽</span><p>AR / VR</p></div>
+      </div>
+      <div class="selected-tags" id="selected-domains"></div>
+      <button class="btn-add" style="margin-top:20px; width:auto; padding:12px 28px" onclick="saveDomains()">💾 Save Domains</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const API   = 'http://localhost:5000/api';
+  const token = localStorage.getItem('token');
+  const user  = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!token) location.href = 'index.html';
+
+  const initial = (user.name || 'S')[0].toUpperCase();
+  document.getElementById('user-welcome').textContent  = '👋 ' + (user.name || '');
+  document.getElementById('sidebar-name').textContent  = user.name || '';
+  document.getElementById('avatar-text').textContent   = initial;
+  document.getElementById('big-avatar').textContent    = initial;
+  document.getElementById('profile-name').textContent  = user.name || '';
+  document.getElementById('profile-email').textContent = user.email || '';
+  document.getElementById('info-name').textContent     = user.name || '';
+  document.getElementById('info-email').textContent    = user.email || '';
+
+  // ── UNIQUE ID ──
+  function getOrCreateUID() {
+    let uid = localStorage.getItem('student-uid');
+    if (!uid) {
+      const nameCode = (user.name || 'STU').replace(/\s+/g,'').substring(0,3).toUpperCase();
+      const rand     = Math.floor(10000 + Math.random() * 90000);
+      uid = 'EDU-IN-' + nameCode + '-' + rand;
+      localStorage.setItem('student-uid', uid);
+    }
+    return uid;
+  }
+
+  const studentUID = getOrCreateUID();
+  let isMasked = JSON.parse(localStorage.getItem('uid-masked') || 'false');
+
+  function renderUID() {
+    const displayEl = document.getElementById('uid-display');
+    const maskBtn   = document.getElementById('mask-btn');
+    const notice    = document.getElementById('mask-notice');
+    const infoUID   = document.getElementById('info-uid');
+    const infoVis   = document.getElementById('info-visibility');
+    if (!displayEl) return;
+    if (isMasked) {
+      displayEl.textContent = '••••-••-•••-•••••';
+      maskBtn.textContent   = '👁️ Show';
+      notice.style.display  = 'block';
+      infoUID.textContent   = '••••-••-•••-•••••';
+      infoVis.textContent   = '🔴 Masked';
+      infoVis.style.color   = '#ef4444';
+    } else {
+      displayEl.textContent = studentUID;
+      maskBtn.textContent   = '🙈 Hide';
+      notice.style.display  = 'none';
+      infoUID.textContent   = studentUID;
+      infoVis.textContent   = '🟢 Public';
+      infoVis.style.color   = '#34d399';
+    }
+  }
+
+  renderUID();
+
+  function toggleMask() {
+    isMasked = !isMasked;
+    localStorage.setItem('uid-masked', JSON.stringify(isMasked));
+    renderUID();
+    showUIDMsg(isMasked ? '🔒 ID hidden from recruiters' : '🔓 ID visible to recruiters');
+  }
+
+  function copyUID() {
+    if (isMasked) return showUIDMsg('⚠️ Unmask your ID first');
+    navigator.clipboard.writeText(studentUID).then(() => showUIDMsg('✅ Copied!'));
+  }
+
+  function shareUID() {
+    if (isMasked) return showUIDMsg('⚠️ Unmask your ID first');
+    const text = 'My EDU INDIA Student ID: ' + studentUID + '\nVerify: http://localhost:3000/verify.html';
+    navigator.clipboard.writeText(text).then(() => showUIDMsg('✅ Share text copied!'));
+  }
+
+  function showUIDMsg(msg) {
+    const el = document.getElementById('uid-msg');
+    el.textContent = msg;
+    setTimeout(() => el.textContent = '', 2500);
+  }
+
+  let timeline = JSON.parse(localStorage.getItem('timeline') || '[]');
+  let skills   = JSON.parse(localStorage.getItem('skills')   || '[]');
+  let domains  = JSON.parse(localStorage.getItem('domains')  || '[]');
+
+  renderTimeline(); renderSkills(); renderDomains(); loadCerts();
+
+  function showSection(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    el.classList.add('active');
+  }
+
+  function showFileName(input) {
+    document.getElementById('file-name').textContent = '✅ ' + (input.files[0]?.name || '');
+  }
+
+  async function uploadCert() {
+    const file       = document.getElementById('cert-file').files[0];
+    const holderName = document.getElementById('holder-name').value.trim();
+    const issuerName = document.getElementById('issuer-name').value.trim();
+    const courseName = document.getElementById('course-name').value.trim();
+    if (!file || !holderName || !issuerName || !courseName) return alert('Please fill all fields and select a file');
+    const statusBox = document.getElementById('upload-status');
+    statusBox.style.display = 'block';
+    statusBox.innerHTML = '⏳ Generating SHA-256 hash & storing on blockchain...';
+    const formData = new FormData();
+    formData.append('certificate', file);
+    formData.append('holderName', holderName);
+    formData.append('issuerName', issuerName);
+    formData.append('courseName', courseName);
+    try {
+      const res  = await fetch(API + '/certificates/upload', { method:'POST', headers:{'Authorization':'Bearer '+token}, body:formData });
+      const data = await res.json();
+      if (data.success) {
+        statusBox.innerHTML = `<div style="line-height:2">✅ <strong>Stored on blockchain!</strong><br>🔐 <strong>SHA-256:</strong> <code>${data.fileHash.substring(0,32)}...</code><br>⛓️ <strong>TX Hash:</strong> <code>${data.txHash.substring(0,32)}...</code><br><img src="${data.qrCode}" width="130" style="margin-top:10px;border-radius:8px;display:block"/></div>`;
+        loadCerts();
+      } else { statusBox.innerHTML = '❌ ' + (data.error || data.msg); }
+    } catch (err) { statusBox.innerHTML = '❌ ' + err.message; }
+  }
+
+  async function loadCerts() {
+    try {
+      const res   = await fetch(API + '/certificates/my', { headers:{'Authorization':'Bearer '+token} });
+      const certs = await res.json();
+      document.getElementById('info-certs').textContent = certs.length;
+      const grid = document.getElementById('cert-list');
+      if (!certs.length) { grid.innerHTML = '<p style="color:#6b7280">No certificates yet. Upload one above!</p>'; return; }
+      grid.innerHTML = certs.map(c => `
+        <div class="cert-card">
+          <h3>${c.courseName}</h3>
+          <p>🏛️ <strong>Issuer:</strong> ${c.issuerName}</p>
+          <p>👤 <strong>Holder:</strong> ${c.holderName}</p>
+          <p>📅 ${new Date(c.issuedDate).toLocaleDateString()}</p>
+          <span class="badge badge-green" style="margin:8px 0;display:inline-block">✅ On-Chain</span><br>
+          <img src="${c.qrCode}" width="90" style="border-radius:6px;margin:8px 0;display:block"/>
+          <a href="verify.html?certId=${c.certId}" class="link-small" target="_blank">🔍 Verify →</a>
+        </div>`).join('');
+    } catch (err) { console.error(err); }
+  }
+
+  function addTimeline() {
+    const year  = document.getElementById('tl-year').value.trim();
+    const title = document.getElementById('tl-title').value.trim();
+    const inst  = document.getElementById('tl-inst').value.trim();
+    if (!year || !title || !inst) return alert('Fill all timeline fields');
+    timeline.unshift({ year, title, inst });
+    localStorage.setItem('timeline', JSON.stringify(timeline));
+    renderTimeline();
+    document.getElementById('tl-year').value = document.getElementById('tl-title').value = document.getElementById('tl-inst').value = '';
+  }
+
+  function renderTimeline() {
+    const el = document.getElementById('timeline-list');
+    if (!timeline.length) { el.innerHTML = '<p style="color:#6b7280">No entries yet.</p>'; return; }
+    el.innerHTML = timeline.map(t => `
+      <div class="timeline-item">
+        <div class="tl-dot">${t.year.slice(-2)}</div>
+        <div class="tl-content"><h4>${t.title}</h4><p>${t.inst} · ${t.year}</p></div>
+      </div>`).join('');
+  }
+
+  const skillWidths = { Beginner:'25%', Intermediate:'55%', Advanced:'80%', Expert:'100%' };
+  const skillColors = { Beginner:'#6b7280', Intermediate:'#3b82f6', Advanced:'#7c3aed', Expert:'#34d399' };
+
+  function addSkill() {
+    const name  = document.getElementById('skill-name').value.trim();
+    const level = document.getElementById('skill-level').value;
+    if (!name) return alert('Enter a skill name');
+    skills.push({ name, level });
+    localStorage.setItem('skills', JSON.stringify(skills));
+    renderSkills();
+    document.getElementById('skill-name').value = '';
+  }
+
+  function renderSkills() {
+    const el = document.getElementById('skills-list');
+    if (!skills.length) { el.innerHTML = '<p style="color:#6b7280">No skills added yet!</p>'; return; }
+    el.innerHTML = skills.map(s => `
+      <div class="skill-card">
+        <h4>${s.name}</h4>
+        <div class="skill-bar"><div class="skill-fill" style="width:${skillWidths[s.level]};background:linear-gradient(90deg,${skillColors[s.level]},#7c3aed)"></div></div>
+        <span class="skill-level-text" style="color:${skillColors[s.level]}">${s.level}</span>
+      </div>`).join('');
+  }
+
+  function toggleDomain(el) {
+    el.classList.toggle('selected');
+    const domain = el.dataset.domain;
+    if (el.classList.contains('selected')) { if (!domains.includes(domain)) domains.push(domain); }
+    else { domains = domains.filter(d => d !== domain); }
+    updateSelectedTags();
+  }
+
+  function renderDomains() {
+    document.querySelectorAll('.domain-card').forEach(card => { if (domains.includes(card.dataset.domain)) card.classList.add('selected'); });
+    updateSelectedTags();
+  }
+
+  function updateSelectedTags() {
+    const el = document.getElementById('selected-domains');
+    if (!domains.length) { el.innerHTML = ''; return; }
+    el.innerHTML = domains.map(d => `<span class="badge badge-green">${d}</span>`).join('');
+  }
+
+  function saveDomains() { localStorage.setItem('domains', JSON.stringify(domains)); alert('✅ Domains saved!'); }
+  function logout() { localStorage.clear(); location.href = 'index.html'; }
+</script>
+</body>
+</html>

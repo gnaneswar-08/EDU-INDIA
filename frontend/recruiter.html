@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recruiter Dashboard — EDU INDIA</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+    .navbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: rgba(15,15,30,0.95); border-bottom: 1px solid rgba(16,185,129,0.2); position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 1.4rem; font-weight: 800; color: #34d399; letter-spacing: -0.5px; }
+    .logo span { color: #a78bfa; }
+    .btn-small { padding: 8px 18px; background: linear-gradient(135deg,#059669,#047857); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+    .layout { display: flex; min-height: calc(100vh - 65px); }
+    .sidebar { width: 240px; min-width: 240px; background: rgba(10,10,20,0.98); border-right: 1px solid rgba(16,185,129,0.15); padding: 20px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .sidebar-profile { display: flex; align-items: center; gap: 12px; padding: 14px; background: rgba(16,185,129,0.1); border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(16,185,129,0.2); }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#059669,#3b82f6); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: white; flex-shrink: 0; }
+    .avatar-name { font-weight: 600; color: #e0e0e0; font-size: 0.9rem; }
+    .avatar-role { font-size: 0.72rem; color: #34d399; margin-top: 2px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; color: #6b7280; cursor: pointer; transition: all 0.25s; font-size: 0.88rem; font-weight: 500; border: 1px solid transparent; user-select: none; }
+    .nav-item:hover { color: #e0e0e0; background: rgba(16,185,129,0.08); }
+    .nav-item.active { color: #34d399; background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); }
+    .nav-icon { font-size: 1.1rem; }
+    .main-content { flex: 1; padding: 32px; overflow-y: auto; background: #0a0a0f; }
+    .section { display: none; animation: fadeInUp 0.35s ease; }
+    .section.active { display: block; }
+    .section-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(16,185,129,0.12); }
+    .section-header h2 { font-size: 1.5rem; color: #e0e0e0; margin-bottom: 6px; }
+    .section-header p { color: #6b7280; font-size: 0.88rem; }
+    .search-box { background: rgba(26,26,46,0.9); border: 1px solid rgba(16,185,129,0.2); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+    .search-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    input, select { padding: 12px 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #e0e0e0; font-size: 0.92rem; flex: 1; transition: border-color 0.3s; font-family: 'Inter', sans-serif; }
+    input:focus, select:focus { outline: none; border-color: #059669; }
+    input::placeholder { color: #4b5563; }
+    .btn-search { padding: 12px 28px; background: linear-gradient(135deg,#059669,#047857); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s; white-space: nowrap; }
+    .btn-search:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(5,150,105,0.4); }
+    .uid-search-box { border-top: 1px solid rgba(16,185,129,0.12); padding-top: 16px; margin-top: 4px; }
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 16px; margin-top: 8px; }
+    .student-card { background: rgba(26,26,46,0.9); border: 1px solid rgba(16,185,129,0.15); border-radius: 14px; padding: 20px; transition: all 0.3s; }
+    .student-card:hover { transform: translateY(-3px); border-color: rgba(16,185,129,0.4); box-shadow: 0 10px 30px rgba(16,185,129,0.15); }
+    .student-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .student-avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#059669,#3b82f6); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; color: white; flex-shrink: 0; }
+    .student-name { font-weight: 600; color: #e0e0e0; font-size: 0.95rem; }
+    .student-email { color: #6b7280; font-size: 0.8rem; margin-top: 2px; }
+    .cert-tag { background: rgba(5,150,105,0.15); border: 1px solid rgba(16,185,129,0.25); color: #34d399; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+    .domain-tag { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); color: #60a5fa; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; }
+    .btn-verify { width: 100%; padding: 10px; background: transparent; border: 1px solid rgba(16,185,129,0.4); color: #34d399; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; }
+    .btn-verify:hover { background: rgba(16,185,129,0.1); }
+    .domain-filter-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(130px,1fr)); gap: 12px; margin-bottom: 24px; }
+    .domain-btn { background: rgba(26,26,46,0.9); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 16px 10px; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .domain-btn span { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+    .domain-btn p { color: #6b7280; font-size: 0.8rem; font-weight: 500; }
+    .domain-btn:hover, .domain-btn.active { border-color: #3b82f6; background: rgba(59,130,246,0.12); transform: translateY(-2px); }
+    .domain-btn.active p { color: #60a5fa; }
+    .trending-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 20px; }
+    .trend-card { background: rgba(26,26,46,0.9); border: 1px solid rgba(124,58,237,0.2); border-radius: 14px; padding: 22px; transition: all 0.3s; }
+    .trend-card:hover { transform: translateY(-3px); border-color: rgba(124,58,237,0.4); }
+    .trend-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .trend-title { font-size: 1rem; font-weight: 600; color: #e0e0e0; }
+    .trend-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+    .hot    { background: rgba(239,68,68,0.2);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .rising { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .stable { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .trend-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; color: #9ca3af; }
+    .trend-bar { height: 8px; background: rgba(255,255,255,0.07); border-radius: 4px; overflow: hidden; }
+    .trend-fill { height: 100%; border-radius: 4px; transition: width 1s; }
+    .trend-desc { color: #6b7280; font-size: 0.82rem; margin-top: 12px; line-height: 1.5; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #111827; border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 28px; width: 90%; max-width: 480px; animation: fadeInUp 0.3s ease; }
+    .modal h3 { color: #34d399; margin-bottom: 16px; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+    .btn-cancel { flex: 1; padding: 11px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9ca3af; border-radius: 10px; cursor: pointer; }
+    .empty-state { text-align: center; padding: 48px; color: #6b7280; grid-column: 1/-1; }
+    .empty-state div { font-size: 3rem; margin-bottom: 12px; }
+    .uid-result-card { margin-top: 14px; padding: 20px; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; animation: fadeInUp 0.3s ease; }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <span class="logo">🎓 EDU <span>INDIA</span></span>
+  <div style="display:flex; align-items:center; gap:16px">
+    <span id="user-welcome" style="color:#34d399; font-size:0.9rem"></span>
+    <button class="btn-small" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-profile">
+      <div class="avatar" id="avatar-text">R</div>
+      <div>
+        <div class="avatar-name" id="sidebar-name">Recruiter</div>
+        <div class="avatar-role">● Recruiter</div>
+      </div>
+    </div>
+    <div class="nav-item active" onclick="showSection('interns',this)"><span class="nav-icon">🔍</span> Search for Interns</div>
+    <div class="nav-item" onclick="showSection('domain',this)"><span class="nav-icon">🎯</span> Search by Domain</div>
+    <div class="nav-item" onclick="showSection('trending',this)"><span class="nav-icon">📈</span> Trending Market Skills</div>
+  </div>
+
+  <div class="main-content">
+
+    <!-- SEARCH FOR INTERNS -->
+    <div id="section-interns" class="section active">
+      <div class="section-header">
+        <h2>🔍 Search for Interns</h2>
+        <p>Find verified students on EDU INDIA by name, skill, or unique student ID</p>
+      </div>
+      <div class="search-box">
+        <div class="search-row">
+          <input type="text" id="intern-search" placeholder="Search by name, skill, or course..." />
+          <select id="intern-filter" style="max-width:180px; flex:unset">
+            <option value="all">All Domains</option>
+            <option value="Web Development">Web Dev</option>
+            <option value="AI / ML">AI / ML</option>
+            <option value="Blockchain">Blockchain</option>
+            <option value="Data Science">Data Science</option>
+            <option value="Cybersecurity">Cybersecurity</option>
+          </select>
+          <button class="btn-search" onclick="searchInterns()">🔍 Search</button>
+        </div>
+        <div class="uid-search-box">
+          <p style="color:#6b7280; font-size:0.82rem; margin-bottom:10px">🪪 Search directly by EDU INDIA Student ID</p>
+          <div style="display:flex; gap:10px">
+            <input type="text" id="uid-search" placeholder="Enter Student ID (e.g. EDU-IN-ADI-12345)" style="font-family:monospace; flex:1" />
+            <button class="btn-search" onclick="searchByUID()">🪪 Find by ID</button>
+          </div>
+          <div id="uid-result"></div>
+        </div>
+      </div>
+      <div id="intern-results" class="results-grid">
+        <div class="empty-state">
+          <div>🔍</div>
+          <p>Search for interns above to see verified candidates</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH BY DOMAIN -->
+    <div id="section-domain" class="section">
+      <div class="section-header">
+        <h2>🎯 Search by Domain</h2>
+        <p>Browse EDU INDIA verified students by their interested domain</p>
+      </div>
+      <div class="domain-filter-grid">
+        <div class="domain-btn" onclick="filterByDomain('Web Development',this)"><span>🌐</span><p>Web Development</p></div>
+        <div class="domain-btn" onclick="filterByDomain('Blockchain',this)"><span>⛓️</span><p>Blockchain</p></div>
+        <div class="domain-btn" onclick="filterByDomain('AI / ML',this)"><span>🤖</span><p>AI / ML</p></div>
+        <div class="domain-btn" onclick="filterByDomain('Cybersecurity',this)"><span>🔐</span><p>Cybersecurity</p></div>
+        <div class="domain-btn" onclick="filterByDomain('Data Science',this)"><span>📊</span><p>Data Science</p></div>
+        <div class="domain-btn" onclick="filterByDomain('Cloud Computing',this)"><span>☁️</span><p>Cloud Computing</p></div>
+        <div class="domain-btn" onclick="filterByDomain('Mobile Dev',this)"><span>📱</span><p>Mobile Dev</p></div>
+        <div class="domain-btn" onclick="filterByDomain('DevOps',this)"><span>⚙️</span><p>DevOps</p></div>
+        <div class="domain-btn" onclick="filterByDomain('UI/UX Design',this)"><span>🎨</span><p>UI/UX Design</p></div>
+        <div class="domain-btn" onclick="filterByDomain('Game Dev',this)"><span>🎮</span><p>Game Dev</p></div>
+        <div class="domain-btn" onclick="filterByDomain('IoT',this)"><span>🔌</span><p>IoT</p></div>
+        <div class="domain-btn" onclick="filterByDomain('AR / VR',this)"><span>🥽</span><p>AR / VR</p></div>
+      </div>
+      <div id="domain-results" class="results-grid">
+        <div class="empty-state">
+          <div>🎯</div>
+          <p>Click a domain above to find matching students</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRENDING -->
+    <div id="section-trending" class="section">
+      <div class="section-header">
+        <h2>📈 Trending Market Skills</h2>
+        <p>Most in-demand skills in the Indian job market right now</p>
+      </div>
+      <div class="trending-grid" id="trending-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- VERIFY MODAL -->
+<div class="modal-overlay" id="verify-modal">
+  <div class="modal">
+    <h3>🔍 Verify Certificate</h3>
+    <p style="color:#6b7280; margin-bottom:16px; font-size:0.88rem">Upload the certificate file to verify on Polygon blockchain</p>
+    <input type="text" id="modal-cert-id" placeholder="Certificate ID" style="margin-bottom:12px; width:100%; flex:unset" />
+    <div onclick="document.getElementById('modal-file').click()" style="border:2px dashed rgba(16,185,129,0.3); border-radius:12px; padding:20px; text-align:center; cursor:pointer; color:#6b7280; margin-bottom:12px">
+      📄 Upload certificate file
+      <input type="file" id="modal-file" style="display:none" onchange="showModalFile(this)"/>
+      <p id="modal-file-name" style="color:#34d399; font-size:0.8rem; margin-top:6px"></p>
+    </div>
+    <div id="modal-result" style="display:none; padding:14px; border-radius:10px; margin-bottom:12px; font-size:0.88rem; line-height:1.8"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-search" style="flex:1" onclick="verifyInModal()">✅ Verify Now</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API   = 'http://localhost:5000/api';
+  const token = localStorage.getItem('token');
+  const user  = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!token) location.href = 'index.html';
+
+  const initial = (user.name || 'R')[0].toUpperCase();
+  document.getElementById('user-welcome').textContent = '👋 ' + (user.name || '');
+  document.getElementById('sidebar-name').textContent  = user.name || '';
+  document.getElementById('avatar-text').textContent   = initial;
+
+  function showSection(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    el.classList.add('active');
+    if (name === 'trending') renderTrending();
+  }
+
+  const demoStudents = [
+    { uid:'EDU-IN-ADI-11234', name:'Aditya Kumar',   email:'aditya@demo.com',  certs:['React Developer','Node.js'],      domains:['Web Development','AI / ML'],    skills:['React','Node','MongoDB'] },
+    { uid:'EDU-IN-PRI-22345', name:'Priya Sharma',   email:'priya@demo.com',   certs:['Python ML','TensorFlow'],          domains:['AI / ML','Data Science'],       skills:['Python','TensorFlow','Pandas'] },
+    { uid:'EDU-IN-RAH-33456', name:'Rahul Singh',    email:'rahul@demo.com',   certs:['Solidity','Web3 Dev'],             domains:['Blockchain','Web Development'],  skills:['Solidity','Ethereum','React'] },
+    { uid:'EDU-IN-SNE-44567', name:'Sneha Patel',    email:'sneha@demo.com',   certs:['AWS Certified','Docker'],          domains:['Cloud Computing','DevOps'],      skills:['AWS','Docker','Kubernetes'] },
+    { uid:'EDU-IN-VIK-55678', name:'Vikram Nair',    email:'vikram@demo.com',  certs:['CEH','Network Security'],          domains:['Cybersecurity'],                 skills:['Ethical Hacking','Kali Linux'] },
+    { uid:'EDU-IN-ANA-66789', name:'Ananya Reddy',   email:'ananya@demo.com',  certs:['Flutter Dev','React Native'],      domains:['Mobile Dev','UI/UX Design'],     skills:['Flutter','Dart','Figma'] },
+    { uid:'EDU-IN-KAR-77890', name:'Karan Mehta',    email:'karan@demo.com',   certs:['Data Analyst','PowerBI'],          domains:['Data Science','AI / ML'],        skills:['SQL','PowerBI','Python'] },
+    { uid:'EDU-IN-DIV-88901', name:'Divya Iyer',     email:'divya@demo.com',   certs:['IoT Engineer','Arduino'],          domains:['IoT','Cloud Computing'],         skills:['Arduino','MQTT','Python'] },
+    { uid:'EDU-IN-ARJ-99012', name:'Arjun Verma',    email:'arjun@demo.com',   certs:['Unity Developer','C#'],            domains:['Game Dev','AR / VR'],            skills:['Unity','C#','Blender'] },
+    { uid:'EDU-IN-MEE-10123', name:'Meera Krishnan', email:'meera@demo.com',   certs:['UI/UX Figma','Adobe XD'],          domains:['UI/UX Design','Web Development'], skills:['Figma','Adobe XD','CSS'] },
+  ];
+
+  function searchInterns() {
+    const query  = document.getElementById('intern-search').value.toLowerCase().trim();
+    const filter = document.getElementById('intern-filter').value;
+    let results  = demoStudents;
+    if (query) results = results.filter(s => s.name.toLowerCase().includes(query) || s.certs.some(c => c.toLowerCase().includes(query)) || s.skills.some(sk => sk.toLowerCase().includes(query)));
+    if (filter !== 'all') results = results.filter(s => s.domains.includes(filter));
+    renderStudentCards('intern-results', results);
+  }
+
+  function searchByUID() {
+    const uid      = document.getElementById('uid-search').value.trim();
+    const resultEl = document.getElementById('uid-result');
+    if (!uid) return alert('Please enter a Student ID');
+    resultEl.innerHTML = '<p style="color:#6b7280; padding:12px 0">⏳ Looking up student on EDU INDIA...</p>';
+    const match = demoStudents.find(s => s.uid.toLowerCase() === uid.toLowerCase() || s.uid.toLowerCase().includes(uid.toLowerCase()));
+    setTimeout(() => {
+      if (match) {
+        resultEl.innerHTML = `
+          <div class="uid-result-card">
+            <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px">
+              <div class="student-avatar">${match.name[0]}</div>
+              <div>
+                <div style="font-weight:700; color:#e0e0e0; font-size:1rem">${match.name}</div>
+                <div style="color:#6b7280; font-size:0.8rem">${match.email}</div>
+                <div style="margin-top:4px; font-family:monospace; font-size:0.75rem; color:#34d399">🪪 ${match.uid}</div>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px">
+              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:12px">
+                <div style="font-size:0.7rem; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px">Certificates</div>
+                ${match.certs.map(c => `<div style="font-size:0.82rem; color:#34d399; margin-bottom:3px">📜 ${c}</div>`).join('')}
+              </div>
+              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:12px">
+                <div style="font-size:0.7rem; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px">Skills</div>
+                ${match.skills.map(s => `<div style="font-size:0.82rem; color:#a78bfa; margin-bottom:3px">⚡ ${s}</div>`).join('')}
+              </div>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px">
+              ${match.domains.map(d => `<span class="domain-tag">🎯 ${d}</span>`).join('')}
+            </div>
+            <button class="btn-search" style="width:100%" onclick="openModal()">🔗 Verify Certificate on Blockchain</button>
+          </div>`;
+      } else {
+        resultEl.innerHTML = `
+          <div style="text-align:center; padding:24px; color:#6b7280; background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.15); border-radius:12px; margin-top:12px">
+            <div style="font-size:2rem; margin-bottom:8px">🔒</div>
+            <p style="color:#f87171; font-weight:600">Student not found on EDU INDIA</p>
+            <p style="font-size:0.8rem; margin-top:6px">The student may have masked their ID or the ID is incorrect.</p>
+          </div>`;
+      }
+    }, 500);
+  }
+
+  function filterByDomain(domain, el) {
+    document.querySelectorAll('.domain-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderStudentCards('domain-results', demoStudents.filter(s => s.domains.includes(domain)));
+  }
+
+  function renderStudentCards(containerId, students) {
+    const el = document.getElementById(containerId);
+    if (!students.length) {
+      el.innerHTML = `<div class="empty-state"><div>😕</div><p>No students found</p></div>`;
+      return;
+    }
+    el.innerHTML = students.map(s => `
+      <div class="student-card">
+        <div class="student-header">
+          <div class="student-avatar">${s.name[0]}</div>
+          <div>
+            <div class="student-name">${s.name}</div>
+            <div class="student-email">${s.email}</div>
+            <div style="font-family:monospace; font-size:0.7rem; color:#6b7280; margin-top:3px">🪪 ${s.uid}</div>
+          </div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px">
+          ${s.certs.map(c => `<span class="cert-tag">📜 ${c}</span>`).join('')}
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px">
+          ${s.domains.map(d => `<span class="domain-tag">🎯 ${d}</span>`).join('')}
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px">
+          ${s.skills.map(sk => `<span style="background:rgba(124,58,237,0.12); border:1px solid rgba(124,58,237,0.25); color:#a78bfa; padding:3px 10px; border-radius:20px; font-size:0.74rem">⚡ ${sk}</span>`).join('')}
+        </div>
+        <button class="btn-verify" onclick="openModal()">🔗 Verify Certificate</button>
+      </div>`).join('');
+  }
+
+  const trendingData = [
+    { title:'Generative AI & LLMs',     badge:'hot',    pct:96, color:'#ef4444', desc:'ChatGPT, Claude, Gemini skills at peak demand across all Indian industries.' },
+    { title:'Blockchain & Web3',         badge:'hot',    pct:88, color:'#f97316', desc:'Smart contracts, DeFi skills surging in Indian fintech and startups.' },
+    { title:'Cloud Architecture (AWS)',  badge:'hot',    pct:92, color:'#ef4444', desc:'AWS, Azure, GCP certifications must-have for backend and DevOps roles.' },
+    { title:'React / Next.js',           badge:'stable', pct:85, color:'#34d399', desc:'Frontend framework skills consistently high demand across Indian IT firms.' },
+    { title:'Python & Data Science',     badge:'stable', pct:90, color:'#34d399', desc:'Python remains top language for data, ML and automation roles in India.' },
+    { title:'Kubernetes & DevOps',       badge:'rising', pct:78, color:'#fbbf24', desc:'Container orchestration rapidly growing across Indian product companies.' },
+    { title:'Cybersecurity (CEH/CISSP)', badge:'rising', pct:82, color:'#fbbf24', desc:'Security roles expanding 3x faster — high demand from BFSI sector.' },
+    { title:'Flutter / React Native',    badge:'rising', pct:74, color:'#fbbf24', desc:'Cross-platform mobile skills growing with Indian app startup boom.' },
+    { title:'UI/UX & Figma',             badge:'stable', pct:70, color:'#34d399', desc:'Design skills steady demand in Indian product and SaaS companies.' },
+  ];
+
+  function renderTrending() {
+    document.getElementById('trending-grid').innerHTML = trendingData.map(t => `
+      <div class="trend-card">
+        <div class="trend-header">
+          <span class="trend-title">${t.title}</span>
+          <span class="trend-badge ${t.badge}">${t.badge==='hot'?'🔥 Hot':t.badge==='rising'?'📈 Rising':'✅ Stable'}</span>
+        </div>
+        <div class="trend-label"><span>Demand</span><span>${t.pct}%</span></div>
+        <div class="trend-bar"><div class="trend-fill" style="width:${t.pct}%; background:linear-gradient(90deg,${t.color},#7c3aed)"></div></div>
+        <p class="trend-desc">${t.desc}</p>
+      </div>`).join('');
+  }
+
+  function openModal() {
+    document.getElementById('verify-modal').classList.add('open');
+    document.getElementById('modal-result').style.display = 'none';
+    document.getElementById('modal-cert-id').value = '';
+    document.getElementById('modal-file-name').textContent = '';
+  }
+
+  function closeModal() { document.getElementById('verify-modal').classList.remove('open'); }
+  function showModalFile(input) { document.getElementById('modal-file-name').textContent = '✅ ' + (input.files[0]?.name || ''); }
+
+  async function verifyInModal() {
+    const certId = document.getElementById('modal-cert-id').value.trim();
+    const file   = document.getElementById('modal-file').files[0];
+    const result = document.getElementById('modal-result');
+    if (!certId || !file) return alert('Please enter Certificate ID and upload file');
+    result.style.display = 'block';
+    result.style.background = 'rgba(30,27,75,0.6)';
+    result.style.border = '1px solid rgba(67,56,202,0.4)';
+    result.style.color = '#e0e0e0';
+    result.innerHTML = '⏳ Checking Polygon blockchain...';
+    const formData = new FormData();
+    formData.append('certId', certId);
+    formData.append('certificate', file);
+    try {
+      const res  = await fetch(API + '/verify/check', { method:'POST', body:formData });
+      const data = await res.json();
+      if (data.isValid) {
+        result.style.background = 'rgba(6,78,59,0.4)';
+        result.style.border = '1px solid rgba(52,211,153,0.4)';
+        result.innerHTML = `✅ <strong>VERIFIED on EDU INDIA</strong><br>👤 ${data.holderName}<br>🏛️ ${data.issuerName}<br>📚 ${data.courseName}<br>📅 ${new Date(data.issuedDate).toLocaleDateString()}`;
+      } else {
+        result.style.background = 'rgba(69,10,10,0.4)';
+        result.style.border = '1px solid rgba(239,68,68,0.4)';
+        result.innerHTML = '❌ <strong>VERIFICATION FAILED</strong><br>Certificate not found or tampered.';
+      }
+    } catch (err) { result.innerHTML = '❌ Error: ' + err.message; }
+  }
+
+  function logout() { localStorage.clear(); location.href = 'index.html'; }
+  renderTrending();
+</script>
+</body>
+</html>

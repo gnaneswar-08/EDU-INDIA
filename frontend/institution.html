@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Institution Dashboard — EDU INDIA</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px; background: rgba(15,15,30,0.95);
+      border-bottom: 1px solid rgba(245,158,11,0.2);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; color: #f59e0b; letter-spacing: -0.5px; }
+    .logo span { color: #a78bfa; }
+    .btn-small { padding: 8px 18px; background: linear-gradient(135deg,#d97706,#b45309); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+    .layout { display: flex; min-height: calc(100vh - 65px); }
+    .sidebar { width: 240px; min-width: 240px; background: rgba(10,10,20,0.98); border-right: 1px solid rgba(245,158,11,0.15); padding: 20px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .sidebar-profile { display: flex; align-items: center; gap: 12px; padding: 14px; background: rgba(245,158,11,0.1); border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(245,158,11,0.2); }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#d97706,#f59e0b); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: white; flex-shrink: 0; }
+    .avatar-name { font-weight: 600; color: #e0e0e0; font-size: 0.9rem; }
+    .avatar-role { font-size: 0.72rem; color: #f59e0b; margin-top: 2px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; color: #6b7280; cursor: pointer; transition: all 0.25s; font-size: 0.88rem; font-weight: 500; border: 1px solid transparent; user-select: none; }
+    .nav-item:hover { color: #e0e0e0; background: rgba(245,158,11,0.08); }
+    .nav-item.active { color: #f59e0b; background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.3); }
+    .nav-icon { font-size: 1.1rem; }
+    .main-content { flex: 1; padding: 32px; overflow-y: auto; background: #0a0a0f; }
+    .section { display: none; animation: fadeInUp 0.35s ease; }
+    .section.active { display: block; }
+    .section-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(245,158,11,0.12); }
+    .section-header h2 { font-size: 1.5rem; color: #e0e0e0; margin-bottom: 6px; }
+    .section-header p { color: #6b7280; font-size: 0.88rem; }
+    input, select, textarea { padding: 12px 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #e0e0e0; font-size: 0.92rem; width: 100%; transition: border-color 0.3s; font-family: 'Inter', sans-serif; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #d97706; }
+    input::placeholder, textarea::placeholder { color: #4b5563; }
+    select option { background: #111827; }
+    .btn-primary { padding: 12px 24px; background: linear-gradient(135deg,#d97706,#b45309); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s; width: 100%; font-family: 'Inter', sans-serif; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(217,119,6,0.4); }
+    .btn-outline { padding: 10px 20px; background: transparent; border: 1px solid rgba(245,158,11,0.4); color: #f59e0b; border-radius: 10px; cursor: pointer; font-size: 0.88rem; font-weight: 600; transition: all 0.3s; white-space: nowrap; font-family: 'Inter', sans-serif; }
+    .btn-outline:hover { background: rgba(245,158,11,0.1); }
+    .card { background: rgba(26,26,46,0.9); border: 1px solid rgba(245,158,11,0.15); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+    .card h3 { color: #f59e0b; margin-bottom: 18px; font-size: 1rem; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(245,158,11,0.15); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: rgba(245,158,11,0.1); }
+    th { padding: 12px 16px; text-align: left; font-size: 0.82rem; color: #f59e0b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    td { padding: 12px 16px; font-size: 0.85rem; color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.04); }
+    tr:hover td { background: rgba(245,158,11,0.04); color: #e0e0e0; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+    .badge-gold  { background: rgba(217,119,6,0.2);  color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .badge-green { background: rgba(6,78,59,0.4);    color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+    .badge-blue  { background: rgba(37,99,235,0.2);  color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+    .badge-purple{ background: rgba(124,58,237,0.2); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-bar input { flex: 1; min-width: 180px; }
+    .filter-bar select { max-width: 180px; }
+
+    /* DOCUMENT MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #111827; border: 1px solid rgba(245,158,11,0.3); border-radius: 18px; padding: 30px; width: 90%; max-width: 560px; animation: fadeInUp 0.3s ease; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { color: #f59e0b; margin-bottom: 6px; font-size: 1.1rem; }
+    .modal-sub { color: #6b7280; font-size: 0.85rem; margin-bottom: 20px; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-cancel { flex: 1; padding: 11px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9ca3af; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-family: 'Inter', sans-serif; }
+    .btn-cancel:hover { background: rgba(255,255,255,0.05); }
+
+    /* DOC LIST */
+    .doc-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+    .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(245,158,11,0.1); border-radius: 10px; }
+    .doc-info { display: flex; align-items: center; gap: 10px; }
+    .doc-icon { font-size: 1.4rem; }
+    .doc-name { font-size: 0.88rem; color: #e0e0e0; font-weight: 500; }
+    .doc-date { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
+    .doc-actions { display: flex; gap: 8px; }
+    .btn-doc { padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; border: none; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .btn-doc-view   { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3) !important; }
+    .btn-doc-issue  { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3) !important; }
+    .btn-doc-delete { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.2)  !important; }
+    .btn-doc:hover  { transform: translateY(-1px); }
+
+    /* UPLOAD DOC */
+    .upload-doc-area { border: 2px dashed rgba(245,158,11,0.3); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(245,158,11,0.03); color: #6b7280; margin-bottom: 14px; }
+    .upload-doc-area:hover { border-color: #d97706; background: rgba(245,158,11,0.07); }
+    .status-msg { padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; line-height: 1.7; margin-top: 12px; }
+    .status-success { background: rgba(6,78,59,0.3); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
+    .status-error   { background: rgba(69,10,10,0.3); border: 1px solid rgba(239,68,68,0.3);  color: #f87171; }
+
+    /* CALENDAR */
+    .calendar-wrap { background: rgba(26,26,46,0.9); border: 1px solid rgba(245,158,11,0.15); border-radius: 16px; padding: 24px; }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .cal-header h3 { color: #f59e0b; font-size: 1.1rem; }
+    .cal-nav { background: transparent; border: 1px solid rgba(245,158,11,0.3); color: #f59e0b; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+    .cal-day-name { text-align: center; font-size: 0.75rem; color: #6b7280; font-weight: 600; padding: 8px 0; }
+    .cal-day { text-align: center; padding: 10px 4px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .cal-day:hover { background: rgba(245,158,11,0.1); }
+    .cal-day.today { background: rgba(245,158,11,0.2); color: #f59e0b; font-weight: 700; border: 1px solid rgba(245,158,11,0.4); }
+    .cal-day.has-event::after { content: '●'; display: block; font-size: 0.4rem; color: #f59e0b; margin-top: 2px; }
+    .cal-day.empty { cursor: default; }
+    .events-list { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .event-item { display: flex; align-items: center; gap: 14px; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); border-radius: 10px; padding: 12px 16px; }
+    .event-date { background: linear-gradient(135deg,#d97706,#b45309); color: white; border-radius: 8px; padding: 6px 10px; text-align: center; min-width: 48px; }
+    .event-date .ed { font-size: 1.1rem; font-weight: 700; line-height: 1; }
+    .event-date .em { font-size: 0.65rem; text-transform: uppercase; }
+    .event-title { font-weight: 600; color: #e0e0e0; font-size: 0.9rem; }
+    .event-sub { color: #6b7280; font-size: 0.78rem; margin-top: 2px; }
+
+    /* QR */
+    .qr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .qr-box { background: rgba(26,26,46,0.9); border: 1px solid rgba(245,158,11,0.15); border-radius: 16px; padding: 24px; }
+    .qr-box h3 { color: #f59e0b; margin-bottom: 18px; font-size: 1rem; }
+    #qr-output { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 16px; }
+    .uid-display { background: rgba(0,0,0,0.4); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 14px; text-align: center; width: 100%; }
+    .uid-display .uid-label { font-size: 0.75rem; color: #6b7280; margin-bottom: 6px; }
+    .uid-display .uid-value { font-size: 1rem; color: #f59e0b; font-weight: 700; font-family: monospace; letter-spacing: 2px; }
+
+    /* ANALYTICS */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: rgba(26,26,46,0.9); border: 1px solid rgba(245,158,11,0.15); border-radius: 14px; padding: 20px; text-align: center; }
+    .stat-icon { font-size: 2rem; margin-bottom: 8px; }
+    .stat-num { font-size: 1.8rem; font-weight: 700; color: #f59e0b; }
+    .stat-label { color: #6b7280; font-size: 0.8rem; margin-top: 4px; }
+    .dept-bars { display: flex; flex-direction: column; gap: 14px; }
+    .dept-bar-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.85rem; }
+    .dept-bar-header span:first-child { color: #e0e0e0; }
+    .dept-bar-header span:last-child { color: #f59e0b; font-weight: 600; }
+    .dept-bar { height: 10px; background: rgba(255,255,255,0.06); border-radius: 5px; overflow: hidden; }
+    .dept-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg,#d97706,#f59e0b); transition: width 1s ease; }
+    .cert-activity { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+    .activity-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: rgba(0,0,0,0.3); border-radius: 10px; font-size: 0.85rem; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; flex-shrink: 0; }
+
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <span class="logo">🎓 EDU <span>INDIA</span></span>
+  <div style="display:flex; align-items:center; gap:16px">
+    <span id="user-welcome" style="color:#f59e0b; font-size:0.9rem"></span>
+    <button class="btn-small" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-profile">
+      <div class="avatar" id="avatar-text">I</div>
+      <div>
+        <div class="avatar-name" id="sidebar-name">Institution</div>
+        <div class="avatar-role">● Institution</div>
+      </div>
+    </div>
+    <div class="nav-item active" onclick="showSection('records',this)"><span class="nav-icon">📋</span> Student Records</div>
+    <div class="nav-item" onclick="showSection('calendar',this)"><span class="nav-icon">📅</span> Calendar</div>
+    <div class="nav-item" onclick="showSection('qr',this)"><span class="nav-icon">🪪</span> Issue Student ID</div>
+    <div class="nav-item" onclick="showSection('analytics',this)"><span class="nav-icon">📊</span> Analytics</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <!-- STUDENT RECORDS -->
+    <div id="section-records" class="section active">
+      <div class="section-header">
+        <h2>📋 Student Records</h2>
+        <p>Manage students, upload documents, and issue certificates by department and course</p>
+      </div>
+
+      <!-- ENROLL FORM -->
+      <div class="card">
+        <h3>➕ Enroll New Student</h3>
+        <div class="two-col" style="margin-bottom:12px">
+          <input type="text" id="stu-name"  placeholder="Student Full Name" />
+          <input type="text" id="stu-email" placeholder="Student Email" />
+        </div>
+        <div class="three-col" style="margin-bottom:12px">
+          <select id="stu-dept">
+            <option value="">Select Department</option>
+            <option>Computer Science</option>
+            <option>Electronics</option>
+            <option>Mechanical</option>
+            <option>Civil</option>
+            <option>MBA</option>
+            <option>Data Science</option>
+            <option>Cybersecurity</option>
+          </select>
+          <select id="stu-course">
+            <option value="">Select Course</option>
+            <option>B.Tech</option>
+            <option>M.Tech</option>
+            <option>MBA</option>
+            <option>BCA</option>
+            <option>MCA</option>
+            <option>B.Sc</option>
+            <option>Diploma</option>
+          </select>
+          <input type="text" id="stu-year" placeholder="Year (e.g. 2024)" />
+        </div>
+        <input type="text" id="stu-cert" placeholder="Certificate / Achievement Name" style="margin-bottom:12px" />
+        <button class="btn-primary" onclick="enrollStudent()">🎓 Enroll Student</button>
+        <div id="enroll-status" style="display:none; margin-top:14px" class="status-msg status-success"></div>
+      </div>
+
+      <!-- FILTER -->
+      <div class="filter-bar">
+        <input type="text" id="rec-search" placeholder="🔍 Search by name or ID..." oninput="filterRecords()" />
+        <select id="rec-dept" onchange="filterRecords()">
+          <option value="">All Departments</option>
+          <option>Computer Science</option>
+          <option>Electronics</option>
+          <option>Mechanical</option>
+          <option>Civil</option>
+          <option>MBA</option>
+          <option>Data Science</option>
+          <option>Cybersecurity</option>
+        </select>
+        <select id="rec-course" onchange="filterRecords()">
+          <option value="">All Courses</option>
+          <option>B.Tech</option>
+          <option>M.Tech</option>
+          <option>MBA</option>
+          <option>BCA</option>
+          <option>MCA</option>
+          <option>B.Sc</option>
+          <option>Diploma</option>
+        </select>
+        <button class="btn-outline" onclick="exportCSV()">⬇️ Export CSV</button>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Course</th>
+              <th>Year</th>
+              <th>Certificate</th>
+              <th>Status</th>
+              <th>Documents</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="records-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div id="section-calendar" class="section">
+      <div class="section-header">
+        <h2>📅 Academic Calendar</h2>
+        <p>Track exams, events, and certificate issuance dates</p>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 340px; gap:24px">
+        <div class="calendar-wrap">
+          <div class="cal-header">
+            <button class="cal-nav" onclick="changeMonth(-1)">← Prev</button>
+            <h3 id="cal-title">March 2026</h3>
+            <button class="cal-nav" onclick="changeMonth(1)">Next →</button>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <h3>➕ Add Event</h3>
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <input type="date" id="evt-date" />
+              <input type="text" id="evt-title" placeholder="Event title" />
+              <select id="evt-type">
+                <option value="exam">📝 Exam</option>
+                <option value="cert">🎓 Certificate Issuance</option>
+                <option value="holiday">🎉 Holiday</option>
+                <option value="deadline">⏰ Deadline</option>
+              </select>
+              <button class="btn-primary" onclick="addEvent()">Add Event</button>
+            </div>
+          </div>
+          <div class="calendar-wrap">
+            <h3 style="color:#f59e0b; margin-bottom:14px; font-size:0.95rem">📌 Upcoming Events</h3>
+            <div class="events-list" id="events-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ISSUE STUDENT ID -->
+    <div id="section-qr" class="section">
+      <div class="section-header">
+        <h2>🪪 Issue Student ID & QR</h2>
+        <p>Generate unique student ID with QR code for certificate verification</p>
+      </div>
+      <div class="qr-grid">
+        <div class="qr-box">
+          <h3>Generate Student ID Card</h3>
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <input type="text" id="qr-name"   placeholder="Student Full Name" />
+            <input type="text" id="qr-roll"   placeholder="Roll Number" />
+            <select id="qr-dept">
+              <option value="">Select Department</option>
+              <option>Computer Science</option>
+              <option>Electronics</option>
+              <option>Mechanical</option>
+              <option>Civil</option>
+              <option>MBA</option>
+              <option>Data Science</option>
+            </select>
+            <select id="qr-course">
+              <option value="">Select Course</option>
+              <option>B.Tech</option>
+              <option>M.Tech</option>
+              <option>MBA</option>
+              <option>BCA</option>
+              <option>MCA</option>
+            </select>
+            <input type="text" id="qr-year" placeholder="Academic Year (e.g. 2021-2025)" />
+            <button class="btn-primary" onclick="generateStudentID()">🪪 Generate ID + QR Code</button>
+          </div>
+        </div>
+        <div class="qr-box">
+          <h3>Generated Student ID Card</h3>
+          <div id="qr-output">
+            <div style="color:#6b7280; text-align:center; padding:40px 0">
+              <div style="font-size:3rem; margin-bottom:12px">🪪</div>
+              <p>Fill the form and click Generate</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:24px">
+        <h3>📋 All Issued Student IDs</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Course</th>
+                <th>Roll No</th>
+                <th>Issued On</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="issued-ids-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="section-analytics" class="section">
+      <div class="section-header">
+        <h2>📊 Analytics Dashboard</h2>
+        <p>Real-time insights on certificates, departments and student activity</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon">🎓</div><div class="stat-num" id="stat-students">0</div><div class="stat-label">Total Students</div></div>
+        <div class="stat-card"><div class="stat-icon">📜</div><div class="stat-num" id="stat-certs">0</div><div class="stat-label">Certificates Issued</div></div>
+        <div class="stat-card"><div class="stat-icon">📁</div><div class="stat-num" id="stat-docs">0</div><div class="stat-label">Documents Uploaded</div></div>
+        <div class="stat-card"><div class="stat-icon">🏛️</div><div class="stat-num" id="stat-depts">7</div><div class="stat-label">Departments</div></div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+        <div class="card">
+          <h3>🏛️ Certificates by Department</h3>
+          <div class="dept-bars" id="dept-bars"></div>
+        </div>
+        <div class="card">
+          <h3>🕐 Recent Activity</h3>
+          <div class="cert-activity" id="cert-activity"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DOCUMENT MODAL -->
+<div class="modal-overlay" id="doc-modal">
+  <div class="modal">
+    <h3>📁 Student Documents</h3>
+    <p class="modal-sub" id="doc-modal-student-name">Loading...</p>
+
+    <!-- Upload New Document -->
+    <div style="background:rgba(245,158,11,0.05); border:1px solid rgba(245,158,11,0.15); border-radius:12px; padding:18px; margin-bottom:20px">
+      <p style="color:#f59e0b; font-size:0.85rem; font-weight:600; margin-bottom:12px">📤 Upload New Document</p>
+      <div style="display:flex; flex-direction:column; gap:10px">
+        <input type="text" id="doc-name-input" placeholder="Document name (e.g. Marksheet Sem 1)" />
+        <select id="doc-type-input">
+          <option value="📜 Certificate">📜 Certificate</option>
+          <option value="📝 Marksheet">📝 Marksheet</option>
+          <option value="🪪 ID Proof">🪪 ID Proof</option>
+          <option value="📋 Application">📋 Application</option>
+          <option value="🏆 Achievement">🏆 Achievement</option>
+          <option value="📄 Other">📄 Other</option>
+        </select>
+        <div class="upload-doc-area" onclick="document.getElementById('doc-file-input').click()">
+          <div style="font-size:2rem; margin-bottom:6px">📄</div>
+          <p>Click to upload file (PDF / PNG / JPG)</p>
+          <input type="file" id="doc-file-input" accept=".pdf,.png,.jpg,.jpeg" style="display:none" onchange="showDocFileName(this)"/>
+          <p id="doc-file-label" style="color:#d97706; font-size:0.82rem; margin-top:6px; font-weight:500"></p>
+        </div>
+        <button class="btn-primary" onclick="uploadDocument()">📤 Upload Document</button>
+        <div id="doc-upload-status" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Document List -->
+    <p style="color:#6b7280; font-size:0.82rem; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px">Uploaded Documents</p>
+    <div id="doc-list" class="doc-list"></div>
+
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeDocModal()">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API   = 'http://localhost:5000/api';
+  const token = localStorage.getItem('token');
+  const user  = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!token) location.href = 'index.html';
+
+  const initial = (user.name || 'I')[0].toUpperCase();
+  document.getElementById('user-welcome').textContent = '👋 ' + (user.name || '');
+  document.getElementById('sidebar-name').textContent  = user.name || '';
+  document.getElementById('avatar-text').textContent   = initial;
+
+  // ── DATA ──
+  let students  = JSON.parse(localStorage.getItem('inst-students') || '[]');
+  let events    = JSON.parse(localStorage.getItem('inst-events')   || '[]');
+  let issuedIDs = JSON.parse(localStorage.getItem('inst-ids')      || '[]');
+  let allDocs   = JSON.parse(localStorage.getItem('inst-docs')     || '{}');
+
+  // Demo data
+  if (!students.length) {
+    students = [
+      { id:'EDU-IN-CS-001', name:'Aditya Kumar',   email:'aditya@demo.com',  dept:'Computer Science', course:'B.Tech', year:'2024', cert:'Web Development',   status:'issued' },
+      { id:'EDU-IN-CS-002', name:'Priya Sharma',   email:'priya@demo.com',   dept:'Computer Science', course:'B.Tech', year:'2024', cert:'Machine Learning',   status:'issued' },
+      { id:'EDU-IN-DS-001', name:'Rahul Singh',    email:'rahul@demo.com',   dept:'Data Science',     course:'M.Tech', year:'2024', cert:'Data Analytics',     status:'issued' },
+      { id:'EDU-IN-EC-001', name:'Sneha Patel',    email:'sneha@demo.com',   dept:'Electronics',      course:'B.Tech', year:'2024', cert:'IoT Engineering',    status:'pending' },
+      { id:'EDU-IN-MB-001', name:'Vikram Nair',    email:'vikram@demo.com',  dept:'MBA',              course:'MBA',    year:'2024', cert:'Business Analytics', status:'issued' },
+      { id:'EDU-IN-CY-001', name:'Ananya Reddy',   email:'ananya@demo.com',  dept:'Cybersecurity',    course:'M.Tech', year:'2024', cert:'Ethical Hacking',    status:'issued' },
+    ];
+    localStorage.setItem('inst-students', JSON.stringify(students));
+  }
+
+  if (!events.length) {
+    const y = new Date().getFullYear();
+    const m = String(new Date().getMonth()+1).padStart(2,'0');
+    events = [
+      { date:`${y}-${m}-20`, title:'Mid-Semester Exams',              type:'exam'     },
+      { date:`${y}-${m}-25`, title:'Certificate Issuance Ceremony',   type:'cert'     },
+      { date:`${y}-${m}-28`, title:'Project Submission Deadline',     type:'deadline' },
+    ];
+    localStorage.setItem('inst-events', JSON.stringify(events));
+  }
+
+  // Demo docs
+  if (!Object.keys(allDocs).length) {
+    allDocs['EDU-IN-CS-001'] = [
+      { id:'doc1', name:'B.Tech Degree Certificate', type:'📜 Certificate', date:'2024-03-10' },
+      { id:'doc2', name:'Semester 8 Marksheet',      type:'📝 Marksheet',   date:'2024-02-15' },
+    ];
+    allDocs['EDU-IN-CS-002'] = [
+      { id:'doc3', name:'ML Course Certificate', type:'📜 Certificate', date:'2024-01-20' },
+    ];
+    localStorage.setItem('inst-docs', JSON.stringify(allDocs));
+  }
+
+  renderRecords(students);
+  renderEvents();
+  renderIssuedIDs();
+  updateAnalytics();
+
+  // ── SECTION SWITCH ──
+  function showSection(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    el.classList.add('active');
+    if (name === 'calendar')  renderCalendar();
+    if (name === 'analytics') updateAnalytics();
+  }
+
+  // ── ENROLL ──
+  function generateUID(dept, year) {
+    const dc   = dept.substring(0,2).toUpperCase();
+    const rand = Math.floor(100 + Math.random() * 900);
+    return `EDU-IN-${dc}-${year.slice(-2)}${rand}`;
+  }
+
+  function enrollStudent() {
+    const name   = document.getElementById('stu-name').value.trim();
+    const email  = document.getElementById('stu-email').value.trim();
+    const dept   = document.getElementById('stu-dept').value;
+    const course = document.getElementById('stu-course').value;
+    const year   = document.getElementById('stu-year').value.trim();
+    const cert   = document.getElementById('stu-cert').value.trim();
+    if (!name || !dept || !course || !year || !cert) return alert('Please fill all fields');
+
+    const uid = generateUID(dept, year);
+    students.push({ id:uid, name, email, dept, course, year, cert, status:'issued' });
+    localStorage.setItem('inst-students', JSON.stringify(students));
+
+    const statusEl = document.getElementById('enroll-status');
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = `✅ <strong>Enrolled!</strong> &nbsp; ID: <span style="font-family:monospace; color:#f59e0b">${uid}</span> &nbsp; — &nbsp; ${name} &nbsp; | &nbsp; ${dept} &nbsp; | &nbsp; ${cert}`;
+
+    renderRecords(students);
+    updateAnalytics();
+    ['stu-name','stu-email','stu-year','stu-cert'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('stu-dept').value = '';
+    document.getElementById('stu-course').value = '';
+  }
+
+  // ── RENDER RECORDS ──
+  function renderRecords(data) {
+    const tbody = document.getElementById('records-body');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:24px; color:#6b7280">No records found</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(s => {
+      const docCount = (allDocs[s.id] || []).length;
+      return `
+        <tr>
+          <td><span style="font-family:monospace; color:#f59e0b; font-size:0.78rem">${s.id}</span></td>
+          <td style="color:#e0e0e0; font-weight:500">${s.name}</td>
+          <td>${s.dept}</td>
+          <td>${s.course}</td>
+          <td>${s.year}</td>
+          <td>${s.cert}</td>
+          <td><span class="badge ${s.status==='issued'?'badge-green':'badge-gold'}">${s.status==='issued'?'✅ Issued':'⏳ Pending'}</span></td>
+          <td>
+            <button class="btn-doc btn-doc-view" onclick="openDocModal('${s.id}')">
+              📁 Docs ${docCount > 0 ? `<span style="background:rgba(245,158,11,0.3); padding:1px 6px; border-radius:10px; margin-left:4px">${docCount}</span>` : ''}
+            </button>
+          </td>
+          <td><button class="btn-outline" style="padding:6px 12px; font-size:0.78px" onclick="quickVerify('${s.id}')">🔗 Verify</button></td>
+        </tr>`;
+    }).join('');
+  }
+
+  function filterRecords() {
+    const search = document.getElementById('rec-search').value.toLowerCase();
+    const dept   = document.getElementById('rec-dept').value;
+    const course = document.getElementById('rec-course').value;
+    const filtered = students.filter(s =>
+      (!search || s.name.toLowerCase().includes(search) || s.id.toLowerCase().includes(search)) &&
+      (!dept   || s.dept === dept) &&
+      (!course || s.course === course)
+    );
+    renderRecords(filtered);
+  }
+
+  function exportCSV() {
+    const headers = 'Student ID,Name,Email,Department,Course,Year,Certificate,Status';
+    const rows    = students.map(s => `${s.id},${s.name},${s.email||''},${s.dept},${s.course},${s.year},${s.cert},${s.status}`);
+    const csv     = [headers, ...rows].join('\n');
+    const blob    = new Blob([csv], { type:'text/csv' });
+    const a       = document.createElement('a');
+    a.href        = URL.createObjectURL(blob);
+    a.download    = 'student_records.csv';
+    a.click();
+  }
+
+  function quickVerify(id) {
+    alert(`Certificate ID: ${id}\nOpen the verify page to check blockchain status.`);
+  }
+
+  // ── DOCUMENT MODAL ──
+  let currentStudentId = null;
+
+  function openDocModal(studentId) {
+    currentStudentId = studentId;
+    const student    = students.find(s => s.id === studentId);
+    document.getElementById('doc-modal-student-name').textContent =
+      `${student?.name || ''} — ${student?.dept || ''} | ${student?.course || ''}`;
+    document.getElementById('doc-name-input').value  = '';
+    document.getElementById('doc-file-label').textContent = '';
+    document.getElementById('doc-upload-status').style.display = 'none';
+    renderDocList(studentId);
+    document.getElementById('doc-modal').classList.add('open');
+  }
+
+  function closeDocModal() {
+    document.getElementById('doc-modal').classList.remove('open');
+    currentStudentId = null;
+  }
+
+  function renderDocList(studentId) {
+    const docs = allDocs[studentId] || [];
+    const el   = document.getElementById('doc-list');
+    if (!docs.length) {
+      el.innerHTML = '<p style="color:#6b7280; text-align:center; padding:20px 0; font-size:0.88rem">No documents uploaded yet</p>';
+      return;
+    }
+    el.innerHTML = docs.map(d => `
+      <div class="doc-item">
+        <div class="doc-info">
+          <span class="doc-icon">${d.type.split(' ')[0]}</span>
+          <div>
+            <div class="doc-name">${d.name}</div>
+            <div class="doc-date">${d.type} &nbsp;·&nbsp; ${d.date}</div>
+          </div>
+        </div>
+        <div class="doc-actions">
+          <button class="btn-doc btn-doc-issue"  onclick="issueDoc('${d.id}')">🎓 Issue</button>
+          <button class="btn-doc btn-doc-delete" onclick="deleteDoc('${studentId}','${d.id}')">🗑️</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function showDocFileName(input) {
+    document.getElementById('doc-file-label').textContent = input.files[0] ? '✅ ' + input.files[0].name : '';
+  }
+
+  function uploadDocument() {
+    const name   = document.getElementById('doc-name-input').value.trim();
+    const type   = document.getElementById('doc-type-input').value;
+    const file   = document.getElementById('doc-file-input').files[0];
+    const status = document.getElementById('doc-upload-status');
+
+    if (!name)  { showDocStatus('❌ Please enter document name', false); return; }
+    if (!file)  { showDocStatus('❌ Please select a file', false); return; }
+
+    // Add to local storage (demo)
+    if (!allDocs[currentStudentId]) allDocs[currentStudentId] = [];
+    const newDoc = {
+      id:   'doc_' + Date.now(),
+      name,
+      type,
+      date: new Date().toISOString().split('T')[0]
+    };
+    allDocs[currentStudentId].push(newDoc);
+    localStorage.setItem('inst-docs', JSON.stringify(allDocs));
+
+    showDocStatus('✅ Document uploaded successfully!', true);
+    document.getElementById('doc-name-input').value = '';
+    document.getElementById('doc-file-label').textContent = '';
+    renderDocList(currentStudentId);
+    renderRecords(students);
+    updateAnalytics();
+  }
+
+  function showDocStatus(msg, success) {
+    const el = document.getElementById('doc-upload-status');
+    el.style.display = 'block';
+    el.className = 'status-msg ' + (success ? 'status-success' : 'status-error');
+    el.textContent = msg;
+    setTimeout(() => el.style.display = 'none', 3000);
+  }
+
+  function issueDoc(docId) {
+    alert('✅ Document issued as blockchain certificate!\n(In production this would trigger a smart contract transaction)');
+  }
+
+  function deleteDoc(studentId, docId) {
+    if (!confirm('Delete this document?')) return;
+    allDocs[studentId] = (allDocs[studentId] || []).filter(d => d.id !== docId);
+    localStorage.setItem('inst-docs', JSON.stringify(allDocs));
+    renderDocList(studentId);
+    renderRecords(students);
+    updateAnalytics();
+  }
+
+  // ── CALENDAR ──
+  let calDate = new Date();
+
+  function renderCalendar() {
+    const year  = calDate.getFullYear();
+    const month = calDate.getMonth();
+    const today = new Date();
+    document.getElementById('cal-title').textContent = calDate.toLocaleString('default', { month:'long', year:'numeric' });
+    const firstDay    = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const eventDates  = events.map(e => e.date);
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let html = days.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+    for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+      const hasEvt  = eventDates.includes(dateStr);
+      html += `<div class="cal-day ${isToday?'today':''} ${hasEvt?'has-event':''}" onclick="showDayEvents('${dateStr}')">${d}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = html;
+    renderEvents();
+  }
+
+  function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
+
+  function showDayEvents(date) {
+    const dayEvents = events.filter(e => e.date === date);
+    if (!dayEvents.length) return;
+    alert(dayEvents.map(e => '📌 ' + e.title).join('\n'));
+  }
+
+  function addEvent() {
+    const date  = document.getElementById('evt-date').value;
+    const title = document.getElementById('evt-title').value.trim();
+    const type  = document.getElementById('evt-type').value;
+    if (!date || !title) return alert('Please fill date and title');
+    events.push({ date, title, type });
+    localStorage.setItem('inst-events', JSON.stringify(events));
+    renderCalendar();
+    document.getElementById('evt-date').value  = '';
+    document.getElementById('evt-title').value = '';
+  }
+
+  function renderEvents() {
+    const sorted   = [...events].sort((a,b) => new Date(a.date) - new Date(b.date));
+    const upcoming = sorted.filter(e => new Date(e.date) >= new Date());
+    const el       = document.getElementById('events-list');
+    if (!upcoming.length) { el.innerHTML = '<p style="color:#6b7280; font-size:0.85rem">No upcoming events</p>'; return; }
+    const icons = { exam:'📝', cert:'🎓', holiday:'🎉', deadline:'⏰' };
+    el.innerHTML = upcoming.slice(0,5).map(e => {
+      const d = new Date(e.date);
+      return `
+        <div class="event-item">
+          <div class="event-date">
+            <div class="ed">${d.getDate()}</div>
+            <div class="em">${d.toLocaleString('default',{month:'short'})}</div>
+          </div>
+          <div>
+            <div class="event-title">${icons[e.type]||'📌'} ${e.title}</div>
+            <div class="event-sub">${e.type.charAt(0).toUpperCase()+e.type.slice(1)}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── QR / STUDENT ID ──
+  function generateStudentID() {
+    const name   = document.getElementById('qr-name').value.trim();
+    const roll   = document.getElementById('qr-roll').value.trim();
+    const dept   = document.getElementById('qr-dept').value;
+    const course = document.getElementById('qr-course').value;
+    const year   = document.getElementById('qr-year').value.trim();
+    if (!name || !roll || !dept || !course || !year) return alert('Please fill all fields');
+
+    const uid    = 'EDU-IN-' + dept.substring(0,2).toUpperCase() + '-' + roll + '-' + Date.now().toString().slice(-4);
+    const qrData = JSON.stringify({ uid, name, dept, course, year, roll, issued: new Date().toLocaleDateString() });
+
+    const output = document.getElementById('qr-output');
+    output.innerHTML = `
+      <div class="uid-display" style="width:100%">
+        <div class="uid-label">EDU INDIA Student ID</div>
+        <div class="uid-value">${uid}</div>
+      </div>
+      <div id="qr-canvas"></div>
+      <div style="width:100%; background:rgba(26,26,46,0.9); border:1px solid rgba(245,158,11,0.2); border-radius:12px; padding:16px; font-size:0.85rem; line-height:2">
+        👤 <strong>${name}</strong><br>
+        🎓 ${course} — ${dept}<br>
+        📅 ${year}<br>
+        🔢 Roll: ${roll}
+      </div>
+      <button class="btn-outline" style="width:100%" onclick="window.print()">🖨️ Print ID Card</button>`;
+
+    new QRCode(document.getElementById('qr-canvas'), {
+      text: qrData, width: 160, height: 160,
+      colorDark: '#000000', colorLight: '#ffffff',
+    });
+
+    issuedIDs.push({ uid, name, dept, course, roll, year, issued: new Date().toLocaleDateString() });
+    localStorage.setItem('inst-ids', JSON.stringify(issuedIDs));
+    renderIssuedIDs();
+  }
+
+  function renderIssuedIDs() {
+    const tbody = document.getElementById('issued-ids-body');
+    if (!issuedIDs.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#6b7280">No IDs issued yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = issuedIDs.map(s => `
+      <tr>
+        <td><span style="font-family:monospace; color:#f59e0b; font-size:0.78rem">${s.uid}</span></td>
+        <td style="color:#e0e0e0">${s.name}</td>
+        <td>${s.dept}</td>
+        <td>${s.course}</td>
+        <td>${s.roll}</td>
+        <td>${s.issued}</td>
+        <td><span class="badge badge-green">✅ Active</span></td>
+      </tr>`).join('');
+  }
+
+  // ── ANALYTICS ──
+  function updateAnalytics() {
+    const totalDocs = Object.values(allDocs).reduce((sum, docs) => sum + docs.length, 0);
+    document.getElementById('stat-students').textContent = students.length;
+    document.getElementById('stat-certs').textContent    = students.filter(s => s.status === 'issued').length;
+    document.getElementById('stat-docs').textContent     = totalDocs;
+
+    const depts      = ['Computer Science','Data Science','Electronics','Cybersecurity','MBA','Mechanical','Civil'];
+    const deptCounts = depts.map(d => ({ dept:d, count: students.filter(s => s.dept === d).length }));
+    const maxCount   = Math.max(...deptCounts.map(d => d.count), 1);
+
+    document.getElementById('dept-bars').innerHTML = deptCounts.map(d => `
+      <div>
+        <div class="dept-bar-header"><span>${d.dept}</span><span>${d.count} certs</span></div>
+        <div class="dept-bar"><div class="dept-fill" style="width:${(d.count/maxCount)*100}%"></div></div>
+      </div>`).join('');
+
+    document.getElementById('cert-activity').innerHTML = [...students].reverse().slice(0,5).map(s => `
+      <div class="activity-item">
+        <div class="activity-dot"></div>
+        <div>
+          <strong style="color:#e0e0e0">${s.name}</strong>
+          <span style="color:#6b7280"> — ${s.cert}</span>
+          <span class="badge badge-gold" style="margin-left:8px">${s.dept}</span>
+        </div>
+      </div>`).join('') || '<p style="color:#6b7280">No activity yet</p>';
+  }
+
+  function logout() { localStorage.clear(); location.href = 'index.html'; }
+
+  renderCalendar();
+</script>
+</body>
+</html>
